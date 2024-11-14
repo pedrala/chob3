@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detected Objects</title>
+    <script>
+        // Function to fetch and update data every 5 seconds
+        async function fetchDetectedData() {
+            try {
+                const response = await fetch('/get_detected_data');
+                const data = await response.json();
+                const tableBody = document.getElementById('data-table-body');
+                
+                tableBody.innerHTML = '';  // Clear current rows
+                
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    // Check if confidence is >= 0.9 and apply red font color if true
+                    const className = item.class_name;
+                    const confidence = item.confidence;
+                    const objectCount = item.object_count;
+                    const zone = item.zone;
+                    const time = item.time;
+                    
+                    const confidenceStyle = confidence >= 0.9 ? 'color: red;' : ''; // Apply red color for confidence >= 0.7
+
+                    row.innerHTML = `<td>${className}</td>
+                                     <td style="${confidenceStyle}">${confidence}</td>
+                                     <td>${objectCount}</td>
+                                     <td>${zone}</td>
+                                     <td>${time}</td>`;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        // Refresh data every 5 seconds
+        setInterval(fetchDetectedData, 5000);
+
+        // Fetch data immediately on load
+        window.onload = fetchDetectedData;
+    </script>
+    <style>
+        /* 비디오를 화면 왼쪽에만 보이게 하고, 나머지 공간은 데이터를 위해 사용 */
+        #video-container {
+            width: 40%;
+            float: left;
+            margin-right: 10px;
+        }
+        #data-container {
+            width: 55%;
+            float: left;
+        }
+        table {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Detected Objects</h1>
+    
+    <!-- 비디오 스트리밍을 위한 컨테이너 -->
+    <div id="video-container">
+        <h2>Live Video Feed</h2>
+        <img src="{{ url_for('video_feed') }}" alt="Video Feed" id="video-feed" style="width: 100%; height: auto;">
+    </div>
+
+    <!-- 객체 데이터 테이블을 위한 컨테이너 -->
+    <div id="data-container">
+        <h2>Detected Data</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Confidence</th>
+                    <th>Object Count</th>
+                    <th>Zone</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="data-table-body">
+                <!-- 데이터는 JavaScript로 동적으로 추가됩니다 -->
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
