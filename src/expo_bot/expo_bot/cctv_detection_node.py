@@ -16,7 +16,7 @@ import numpy as np
 class CCTVCrowdDetectionNode(Node):
     def __init__(self):
         super().__init__('cctv_detection_node')  # 노드 이름 설정
-        self.image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  # 이미지 퍼블리셔 생성
+        self.image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  #CompressedImage 이미지 퍼블리셔 생성 
         self.detected_object_publisher_ = self.create_publisher(String, '/detected_object', 10) #객체인식된 정보 퍼블리셔 생성
         self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', 10) #목표좌표 퍼블리셔
         self.json_data = []  # 데이터를 저장할 리스트 초기화
