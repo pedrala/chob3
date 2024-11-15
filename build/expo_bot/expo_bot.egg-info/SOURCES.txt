@@ -11,7 +11,6 @@ setup.py
 expo_bot/__init__.py
 expo_bot/amr_control_node.py
 expo_bot/cctv_detection_node.py
-expo_bot/cctv_detection_node_original.py
 expo_bot/object_detection_node.py
 expo_bot/sys_monitor_node.py
 expo_bot/video_playback_node.py

@@ -104,7 +104,7 @@ class CCTVCrowdDetectionNode(Node):
             # 이미지를 ROS2 이미지 메시지로 변환하여 퍼블리시
             image_message = self.bridge.cv2_to_imgmsg(img, encoding="bgr8")
             self.image_publisher_.publish(image_message)
-
+#ㄴㄴㅇㄹㄴㅇㄹㄴㅇ
             # 화면에 결과 표시
             cv2.imshow('crowd_location', img)
 

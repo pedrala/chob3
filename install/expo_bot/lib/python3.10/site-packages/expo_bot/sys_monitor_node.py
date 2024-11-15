@@ -135,7 +135,7 @@ def video_feed():
 
 @app.route('/get_detected_data')
 def get_detected_data():
-    # 데이터베이스에서 객체 데이터 조회
+    # 데이터베이스에서 객체 데이터 조회 ---
     sys_monitor_node.cursor.execute('SELECT class, confidence, object_count, zone, time FROM detected_objects ORDER BY time DESC LIMIT 10')
     detected_data = sys_monitor_node.cursor.fetchall()
 
