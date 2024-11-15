@@ -67,6 +67,9 @@ class NavigateToGoalNode(Node):
         result = self.navigator.getResult()
         if result == BasicNavigator.Result.SUCCEEDED:
             self.get_logger().info("목표 좌표에 도착했습니다.")
+            #다음 목표로 이동
+            # for range : 
+
         else:
             self.get_logger().info("목표 좌표에 도착하지 못했습니다.")
 

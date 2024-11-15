@@ -102,6 +102,7 @@ class CCTVCrowdDetectionNode(Node):
                 msg.data = json_str
                 self.detected_object_publisher_.publish(msg) # 객체 인식된 정보 퍼블리셔 생성
 
+                # 목표 좌료 5개 이상 리스트에 저장하고 하나씩 action 으로 실행하도록 구현
                 target_position = Point(x=1.0, y=2.0, z=0.0)  # 목표 좌표 (예: x=1.0, y=2.0)
                 self.get_logger().info("목표 좌표 전송 중...")
                 self.target_coordinate_publisher_.publish(target_position)
