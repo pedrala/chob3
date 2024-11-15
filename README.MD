@@ -6,10 +6,14 @@ colcon build --packages-select expo_bot
 
 #실행하는 순서
 
-1. ros2 run expo_bot cctv_detection_node my_best.pt #cctv 관제 시스템 가동 시작, 압축하여 이미지 전송
+#cctv yolo 객체 인식 시작, 이미지 압축하여 발행, 객체인식한 정보 발행, 목표좌표 발행
+1. ros2 run expo_bot cctv_detection_node my_best.pt 
 
-2. ros2 run expo_bot amr_control_node #AMR봇 자체 좌표 및 영상 토픽으로 발행
+#AMR봇 자체 좌표 및 영상 토픽으로 발행
+2. ros2 run expo_bot amr_control_node 
 
-3. ros2 run expo_bot navigate_to_goal_node #임의의 정해진 목표로 네비게이션 
+#목표좌표와 amr봇좌표를 구독받고 목표좌표로 네비게이션 
+3. ros2 run expo_bot navigate_to_goal_node 
 
-4. ros2 run expo_bot sys_monitor_node #모니터링 시스템에서 영상 디스플레이, 구독받은 객체정보 DB 에 저장
+#모니터링 시스템에서 영상 디스플레이, 구독받은 객체정보 DB 에 저장
+4. ros2 run expo_bot sys_monitor_node 
