@@ -10,6 +10,9 @@ import cv2
 from flask import Flask, render_template, Response
 import threading
 import os
+from sensor_msgs.msg import CompressedImage
+import numpy as np
+
 
 # Flask App 설정
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname('/home/viator/ws/chob3_ws/src/expo_bot/expo_bot/templates'), 'templates'))
@@ -22,11 +25,12 @@ class SysMonitorNode(Node):
         self.db_lock = threading.Lock()
 
         # 이미지 토픽 구독
-        self.image_subscription = self.create_subscription(
-            Image,
-            '/crowd_image',
+        self.subscription = self.create_subscription(
+            CompressedImage,
+            'crowd_image',  # 퍼블리시된 토픽 이름
             self.image_callback,
             10)
+        self.subscription  # prevent unused variable warning
         
         # 객체 인식된 JSON 데이터 토픽 구독
         self.json_subscription = self.create_subscription(
@@ -61,8 +65,16 @@ class SysMonitorNode(Node):
         self.conn.commit()
 
     def image_callback(self, msg):
+        try:
+            # CompressedImage 메시지 데이터 디코딩
+            np_arr = np.frombuffer(msg.data, np.uint8)  # 바이트 데이터를 NumPy 배열로 변환
+            cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)  # JPEG 이미지를 OpenCV 이미지로 디코딩
+
+        except Exception as e:
+            self.get_logger().error(f"Failed to decode image: {e}")
+    
         """ROS2 Image 메시지를 OpenCV 이미지로 변환하여 최신 프레임으로 저장"""
-        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        #cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         self.latest_frame = cv_image
 
     def json_callback(self, msg):

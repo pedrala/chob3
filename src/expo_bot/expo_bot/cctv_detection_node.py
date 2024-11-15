@@ -1,23 +1,24 @@
 import json
-import csv
 import time
 from std_msgs.msg import String
 from ultralytics import YOLO
 import cv2
 import os
-import sys
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge  # OpenCV 이미지를 ROS2 이미지 메시지로 변환
+from sensor_msgs.msg import CompressedImage
+import numpy as np
 
 # CCTVCrowdDetectionNode 클래스 정의
 class CCTVCrowdDetectionNode(Node):
     def __init__(self):
         super().__init__('cctv_detection_node')  # 노드 이름 설정
-        self.image_publisher_ = self.create_publisher(Image, '/crowd_image', 10)  # 이미지 퍼블리셔 생성
+        self.image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  # 이미지 퍼블리셔 생성
         self.detected_object_publisher_ = self.create_publisher(String, '/detected_object', 10) #객체인식된 정보 퍼블리셔 생성
+        self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', 10) #목표좌표 퍼블리셔
         self.json_data = []  # 데이터를 저장할 리스트 초기화
         self.bridge = CvBridge()  # CvBridge 인스턴스 생성
         self.blue_box_margin = 50  # 파란색 바운딩 박스의 여백 (픽셀 단위)
@@ -100,11 +101,23 @@ class CCTVCrowdDetectionNode(Node):
                 msg = String()  # String 메시지 객체 생성
                 msg.data = json_str
                 self.detected_object_publisher_.publish(msg) # 객체 인식된 정보 퍼블리셔 생성
+
+                target_position = Point(x=1.0, y=2.0, z=0.0)  # 목표 좌표 (예: x=1.0, y=2.0)
+                self.get_logger().info("목표 좌표 전송 중...")
+                self.target_coordinate_publisher_.publish(target_position)
               
             # 이미지를 ROS2 이미지 메시지로 변환하여 퍼블리시
-            image_message = self.bridge.cv2_to_imgmsg(img, encoding="bgr8")
+            # 이미지 압축 후 퍼블리시
+             # ... (탐지 및 이미지 처리 코드)
+            _, encoded_image = cv2.imencode('.jpg', img)  # 이미지 JPEG 형식으로 압축
+            image_message = CompressedImage()
+            image_message.header.stamp = self.get_clock().now().to_msg()  # to_msg()로 Time 객체 변환
+            image_message.format = "jpeg"
+            image_message.data = np.array(encoded_image).tobytes()  # 압축된 이미지를 바이트로 변환
+
+            #image_message = self.bridge.cv2_to_imgmsg(img, encoding="bgr8")
             self.image_publisher_.publish(image_message)
-#ㄴㄴㅇㄹㄴㅇㄹㄴㅇ
+
             # 화면에 결과 표시
             cv2.imshow('crowd_location', img)
 
