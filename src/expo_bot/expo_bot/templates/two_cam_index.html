@@ -24,7 +24,7 @@
                     const zone = item.zone;
                     const time = item.time;
                     
-                    const confidenceStyle = confidence >= 0.9 ? 'color: red;' : ''; // Apply red color for confidence >= 0.7
+                    const confidenceStyle = confidence >= 0.9 ? 'color: red;' : ''; // Apply red color for confidence >= 0.9
 
                     row.innerHTML = `<td>${className}</td>
                                      <td style="${confidenceStyle}">${confidence}</td>
@@ -45,15 +45,23 @@
         window.onload = fetchDetectedData;
     </script>
     <style>
-        /* 비디오를 화면 왼쪽에만 보이게 하고, 나머지 공간은 데이터를 위해 사용 */
+        /* 비디오를 각각 왼쪽 상단과 오른쪽에 보이게 설정 */
         #video-container {
             width: 40%;
             float: left;
             margin-right: 10px;
         }
+        #video-container-2 {
+            width: 40%;
+            float: right;
+            margin-left: 10px;
+        }
+        /* 데이터 컨테이너를 왼쪽 하단으로 위치 */
         #data-container {
-            width: 55%;
+            width: 40%;
             float: left;
+            clear: both;
+            margin-top: 10px;
         }
         table {
             width: 100%;
@@ -61,12 +69,18 @@
     </style>
 </head>
 <body>
-    <h1>Detected Objects</h1>
+    <h1>System Monitoring</h1>
     
-    <!-- 비디오 스트리밍을 위한 컨테이너 -->
+    <!-- 첫 번째 비디오 스트리밍을 위한 컨테이너 -->
     <div id="video-container">
-        <h2>Live Video Feed</h2>
-        <img src="{{ url_for('video_feed') }}" alt="Video Feed" id="video-feed" style="width: 100%; height: auto;">
+        <h2>Live Video Feed 1</h2>
+        <img src="{{ url_for('video_feed1') }}" alt="Video Feed 1" id="video-feed1" style="width: 100%; height: auto;">
+    </div>
+
+    <!-- 두 번째 비디오 스트리밍을 위한 컨테이너 -->
+    <div id="video-container-2">
+        <h2>Live Video Feed 2</h2>
+        <img src="{{ url_for('video_feed2') }}" alt="Video Feed 2" id="video-feed2" style="width: 100%; height: auto;">
     </div>
 
     <!-- 객체 데이터 테이블을 위한 컨테이너 -->

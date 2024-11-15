@@ -28,9 +28,16 @@ class SysMonitorNode(Node):
         self.subscription = self.create_subscription(
             CompressedImage, #Image, #CompressedImage,
             'crowd_image',  # 퍼블리시된 토픽 이름
-            self.image_callback,
+            self.crowd_image_callback,
             10)
-        self.subscription  # prevent unused variable warning
+        self.subscription 
+
+        self.subscription = self.create_subscription(
+            CompressedImage,
+            'amr_camera_image', 
+            self.amr_image_callback,
+            10)
+        self.subscription 
         
         # 객체 인식된 JSON 데이터 토픽 구독
         self.json_subscription = self.create_subscription(
@@ -64,7 +71,7 @@ class SysMonitorNode(Node):
         
         self.conn.commit()
 
-    def image_callback(self, msg):
+    def crowd_image_callback(self, msg):
         try:
             # CompressedImage 메시지 데이터 디코딩
             np_arr = np.frombuffer(msg.data, np.uint8)  # 바이트 데이터를 Nuros2 topic echomPy 배열로 변환
@@ -75,7 +82,20 @@ class SysMonitorNode(Node):
     
         """ROS2 Image 메시지를 OpenCV 이미지로 변환하여 최신 프레임으로 저장"""
         #cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        self.latest_frame = cv_image
+        self.latest_frame1 = cv_image
+
+    def amr_image_callback(self, msg):
+        try:
+            # CompressedImage 메시지 데이터 디코딩
+            np_arr = np.frombuffer(msg.data, np.uint8)  # 바이트 데이터를 Nuros2 topic echomPy 배열로 변환
+            cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)  # JPEG 이미지를 OpenCV 이미지로 디코딩
+
+        except Exception as e:
+            self.get_logger().error(f"Failed to decode image: {e}")
+    
+        """ROS2 Image 메시지를 OpenCV 이미지로 변환하여 최신 프레임으로 저장"""
+        #cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        self.latest_frame2 = cv_image
 
     def json_callback(self, msg):
         """JSON 데이터 구독 콜백, 데이터를 파싱하여 SQLite에 저장"""
@@ -106,12 +126,12 @@ class SysMonitorNode(Node):
         super().destroy_node()
 
 
-def generate_frames():
+def generate_frames1():
     """이미지를 Flask로 스트리밍하는 제너레이터 함수"""
     while True:
-        if sys_monitor_node.latest_frame is not None:
+        if sys_monitor_node.latest_frame1 is not None:
             try:
-                ret, jpeg = cv2.imencode('.jpg', sys_monitor_node.latest_frame)
+                ret, jpeg = cv2.imencode('.jpg', sys_monitor_node.latest_frame1)
                 if ret:
                     frame = jpeg.tobytes()
                     yield (b'--frame\r\n'
@@ -120,6 +140,22 @@ def generate_frames():
                 app.logger.error(f"Error encoding frame: {e}")
         else:
             continue
+
+def generate_frames2():
+    """이미지를 Flask로 스트리밍하는 제너레이터 함수"""
+    while True:
+        if sys_monitor_node.latest_frame2 is not None:
+            try:
+                ret, jpeg = cv2.imencode('.jpg', sys_monitor_node.latest_frame2)
+                if ret:
+                    frame = jpeg.tobytes()
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            except Exception as e:
+                app.logger.error(f"Error encoding frame: {e}")
+        else:
+            continue
+
 
 @app.route('/')
 def index():
@@ -137,13 +173,17 @@ def index():
         formatted_time = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
         formatted_data.append((class_name, confidence, object_count, zone, formatted_time))
     
-
     # 템플릿에 데이터를 전달
-    return render_template('cam_index.html', detected_data=formatted_data)
+    return render_template('two_cam_index.html', detected_data=formatted_data)
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/video_feed1')
+def video_feed1():
+    return Response(generate_frames1(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_feed2')
+def video_feed2():
+    return Response(generate_frames2(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @app.route('/get_detected_data')
 def get_detected_data():
