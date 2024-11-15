@@ -12,7 +12,7 @@ colcon build --packages-select expo_bot
 #AMR봇 자체 좌표 및 영상 토픽으로 발행
 2. ros2 run expo_bot amr_control_node 
 
-#목표좌표와 amr봇좌표를 구독받고 목표좌표로 네비게이션 
+#목표좌표(리스트)와 AMR봇좌표를 구독받고 목표좌표로 네비게이션 
 3. ros2 run expo_bot navigate_to_goal_node 
 
 #모니터링 시스템에서 영상 디스플레이, 구독받은 객체정보 DB 에 저장
