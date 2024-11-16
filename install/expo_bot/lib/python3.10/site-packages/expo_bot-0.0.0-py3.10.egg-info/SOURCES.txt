@@ -9,12 +9,8 @@ setup.py
 ../../build/expo_bot/expo_bot.egg-info/top_level.txt
 ../../build/expo_bot/expo_bot.egg-info/zip-safe
 expo_bot/__init__.py
-expo_bot/amr_control_node.py
 expo_bot/cctv_detection_node.py
-expo_bot/navigate_to_goal_node.py
-expo_bot/object_detection_node.py
 expo_bot/sys_monitor_node.py
-expo_bot/video_playback_node.py
 resource/expo_bot
 test/test_copyright.py
 test/test_flake8.py

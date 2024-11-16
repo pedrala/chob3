@@ -11,6 +11,8 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge  # OpenCV 이미지를 ROS2 이미지 메시지로 변환
 from sensor_msgs.msg import CompressedImage
 import numpy as np
+from ament_index_python.packages import get_package_share_directory
+
 
 # CCTVCrowdDetectionNode 클래스 정의
 class CCTVCrowdDetectionNode(Node):
@@ -18,18 +20,14 @@ class CCTVCrowdDetectionNode(Node):
         super().__init__('cctv_detection_node')  # 노드 이름 설정
         self.image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  #CompressedImage 이미지 퍼블리셔 생성 
         self.detected_object_publisher_ = self.create_publisher(String, '/detected_object', 10) #객체인식된 정보 퍼블리셔 생성
-        self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', 10) #목표좌표 퍼블리셔
+      
         self.json_data = []  # 데이터를 저장할 리스트 초기화
         self.bridge = CvBridge()  # CvBridge 인스턴스 생성
         self.blue_box_margin = 50  # 파란색 바운딩 박스의 여백 (픽셀 단위)
-        self.model = YOLO('./output/my_best.pt')  # YOLO 모델 로드
+        self.model = YOLO('./src/expo_bot/resource/my_best.pt')  # YOLO 모델 로드
         self.cap = cv2.VideoCapture(0)  # 카메라 사용
         self.last_alert = None  # 마지막 알림 시간 추적 (초기화)
-        
-        # 저장 폴더 확인 및 생성
-        if not os.path.exists('./output'):
-            os.makedirs('./output')
-    
+   
         self.json_data = []  # JSON 파일에 저장할 데이터를 위한 리스트
 
     def run_detection(self):
@@ -85,8 +83,7 @@ class CCTVCrowdDetectionNode(Node):
                     cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
             # 물체가 2개 이상인 경우에만 이미지 저장
-            if object_count >= 2:
-            #and confidence > 0.7:
+            if object_count >= 3 and confidence > 0.7:
 
                 # JSON 파일에 객체 정보 저장
                 self.json_data.append({        
@@ -103,14 +100,9 @@ class CCTVCrowdDetectionNode(Node):
                 msg.data = json_str
                 self.detected_object_publisher_.publish(msg) # 객체 인식된 정보 퍼블리셔 생성
 
-                # 목표 좌료 5개 이상 리스트에 저장하고 하나씩 action 으로 실행하도록 구현
-                target_position = Point(x=1.0, y=2.0, z=0.0)  # 목표 좌표 (예: x=1.0, y=2.0)
-                self.get_logger().info("목표 좌표 전송 중...")
-                self.target_coordinate_publisher_.publish(target_position)
-              
+            
             # 이미지를 ROS2 이미지 메시지로 변환하여 퍼블리시
             # 이미지 압축 후 퍼블리시
-             # ... (탐지 및 이미지 처리 코드)
             _, encoded_image = cv2.imencode('.jpg', img)  # 이미지 JPEG 형식으로 압축
             image_message = CompressedImage()
             image_message.header.stamp = self.get_clock().now().to_msg()  # to_msg()로 Time 객체 변환

@@ -11,6 +11,8 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge  # OpenCV 이미지를 ROS2 이미지 메시지로 변환
 from sensor_msgs.msg import CompressedImage
 import numpy as np
+from ament_index_python.packages import get_package_share_directory
+
 
 # CCTVCrowdDetectionNode 클래스 정의
 class CCTVCrowdDetectionNode(Node):
@@ -18,18 +20,14 @@ class CCTVCrowdDetectionNode(Node):
         super().__init__('cctv_detection_node')  # 노드 이름 설정
         self.image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  #CompressedImage 이미지 퍼블리셔 생성 
         self.detected_object_publisher_ = self.create_publisher(String, '/detected_object', 10) #객체인식된 정보 퍼블리셔 생성
-        self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', 10) #목표좌표 퍼블리셔
+      
         self.json_data = []  # 데이터를 저장할 리스트 초기화
         self.bridge = CvBridge()  # CvBridge 인스턴스 생성
         self.blue_box_margin = 50  # 파란색 바운딩 박스의 여백 (픽셀 단위)
-        self.model = YOLO('./output/my_best.pt')  # YOLO 모델 로드
+        self.model = YOLO('./src/expo_bot/resource/my_best.pt')  # YOLO 모델 로드
         self.cap = cv2.VideoCapture(0)  # 카메라 사용
         self.last_alert = None  # 마지막 알림 시간 추적 (초기화)
-        
-        # 저장 폴더 확인 및 생성
-        if not os.path.exists('./output'):
-            os.makedirs('./output')
-    
+   
         self.json_data = []  # JSON 파일에 저장할 데이터를 위한 리스트
 
     def run_detection(self):
@@ -102,12 +100,7 @@ class CCTVCrowdDetectionNode(Node):
                 msg.data = json_str
                 self.detected_object_publisher_.publish(msg) # 객체 인식된 정보 퍼블리셔 생성
 
-                # 목표 좌표 5개 이상 리스트에 저장하고 하나씩 action 으로 실행하도록 구현
-                self.get_target_positions_from_file()
-                # target_position = Point(x=1.0, y=2.0, z=0.0)  # 목표 좌표 (예: x=1.0, y=2.0)
-                # self.get_logger().info("목표 좌표 전송 중...")
-                # self.target_coordinate_publisher_.publish(target_position)
-              
+            
             # 이미지를 ROS2 이미지 메시지로 변환하여 퍼블리시
             # 이미지 압축 후 퍼블리시
             _, encoded_image = cv2.imencode('.jpg', img)  # 이미지 JPEG 형식으로 압축
@@ -128,31 +121,6 @@ class CCTVCrowdDetectionNode(Node):
         # 카메라 자원 해제 및 창 닫기
         self.cap.release()
         cv2.destroyAllWindows()
-
-    def get_target_positions_from_file(self):
-        # goal_position.json 파일에서 데이터 읽기
-        file_path = "goal_position.json"
-        try:
-            with open(file_path, "r") as file:
-                json_data = json.load(file)
-                if len(json_data) >= 5:
-                    target_positions = []
-                    # 가장 최근의 5개 데이터 가져오기
-                    for target_data in json_data[-5:]:
-                        target_position = Point(
-                            x=target_data['x'],  # x 좌표
-                            y=target_data['y'],  # y 좌표
-                            z=target_data['z']   # z 좌표
-                        )
-                        target_positions.append(target_position)
-                    self.get_logger().info(f"목표 좌표 5개 전송 중...")
-                    # 각 목표 좌표를 퍼블리시
-                    for target_position in target_positions:
-                        self.target_coordinate_publisher_.publish(target_position)
-                else:
-                    self.get_logger().warn(f"goal_position.json에 데이터가 충분하지 않습니다.")
-        except Exception as e:
-            self.get_logger().error(f"파일을 읽는 중 오류 발생: {e}")
 
 
 # ROS2 노드 실행 함수

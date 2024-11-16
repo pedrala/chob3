@@ -1,0 +1,44 @@
+[0.630s] Invoking command in '/home/viator/ws/chob3_ws/src/expo_bot': PYTHONPATH=/home/viator/ws/chob3_ws/build/expo_bot/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/expo_bot build --build-base /home/viator/ws/chob3_ws/build/expo_bot/build install --record /home/viator/ws/chob3_ws/build/expo_bot/install.log --single-version-externally-managed install_data
+[0.856s] running egg_info
+[0.856s] creating ../../build/expo_bot/expo_bot.egg-info
+[0.856s] writing ../../build/expo_bot/expo_bot.egg-info/PKG-INFO
+[0.857s] writing dependency_links to ../../build/expo_bot/expo_bot.egg-info/dependency_links.txt
+[0.857s] writing entry points to ../../build/expo_bot/expo_bot.egg-info/entry_points.txt
+[0.857s] writing requirements to ../../build/expo_bot/expo_bot.egg-info/requires.txt
+[0.857s] writing top-level names to ../../build/expo_bot/expo_bot.egg-info/top_level.txt
+[0.857s] writing manifest file '../../build/expo_bot/expo_bot.egg-info/SOURCES.txt'
+[0.859s] reading manifest file '../../build/expo_bot/expo_bot.egg-info/SOURCES.txt'
+[0.859s] writing manifest file '../../build/expo_bot/expo_bot.egg-info/SOURCES.txt'
+[0.860s] running build
+[0.860s] running build_py
+[0.860s] creating /home/viator/ws/chob3_ws/build/expo_bot/build
+[0.860s] creating /home/viator/ws/chob3_ws/build/expo_bot/build/lib
+[0.860s] creating /home/viator/ws/chob3_ws/build/expo_bot/build/lib/expo_bot
+[0.860s] copying expo_bot/__init__.py -> /home/viator/ws/chob3_ws/build/expo_bot/build/lib/expo_bot
+[0.860s] copying expo_bot/sys_monitor_node.py -> /home/viator/ws/chob3_ws/build/expo_bot/build/lib/expo_bot
+[0.860s] copying expo_bot/cctv_detection_node.py -> /home/viator/ws/chob3_ws/build/expo_bot/build/lib/expo_bot
+[0.860s] running install
+[0.861s] running install_lib
+[0.861s] creating /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot
+[0.861s] copying /home/viator/ws/chob3_ws/build/expo_bot/build/lib/expo_bot/__init__.py -> /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot
+[0.862s] copying /home/viator/ws/chob3_ws/build/expo_bot/build/lib/expo_bot/sys_monitor_node.py -> /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot
+[0.862s] copying /home/viator/ws/chob3_ws/build/expo_bot/build/lib/expo_bot/cctv_detection_node.py -> /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot
+[0.862s] byte-compiling /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot/__init__.py to __init__.cpython-310.pyc
+[0.862s] byte-compiling /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot/sys_monitor_node.py to sys_monitor_node.cpython-310.pyc
+[0.864s] byte-compiling /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot/cctv_detection_node.py to cctv_detection_node.cpython-310.pyc
+[0.865s] running install_data
+[0.865s] creating /home/viator/ws/chob3_ws/install/expo_bot/share/ament_index
+[0.865s] creating /home/viator/ws/chob3_ws/install/expo_bot/share/ament_index/resource_index
+[0.865s] creating /home/viator/ws/chob3_ws/install/expo_bot/share/ament_index/resource_index/packages
+[0.865s] copying resource/expo_bot -> /home/viator/ws/chob3_ws/install/expo_bot/share/ament_index/resource_index/packages
+[0.865s] copying package.xml -> /home/viator/ws/chob3_ws/install/expo_bot/share/expo_bot
+[0.865s] running install_egg_info
+[0.866s] Copying ../../build/expo_bot/expo_bot.egg-info to /home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages/expo_bot-0.0.0-py3.10.egg-info
+[0.867s] running install_scripts
+[0.885s] Installing amr_control_node script to /home/viator/ws/chob3_ws/install/expo_bot/lib/expo_bot
+[0.885s] Installing cctv_detection_node script to /home/viator/ws/chob3_ws/install/expo_bot/lib/expo_bot
+[0.885s] Installing navigate_to_goal_node script to /home/viator/ws/chob3_ws/install/expo_bot/lib/expo_bot
+[0.885s] Installing sys_monitor_node script to /home/viator/ws/chob3_ws/install/expo_bot/lib/expo_bot
+[0.885s] Installing video_playback_node script to /home/viator/ws/chob3_ws/install/expo_bot/lib/expo_bot
+[0.885s] writing list of installed files to '/home/viator/ws/chob3_ws/build/expo_bot/install.log'
+[0.909s] Invoked command in '/home/viator/ws/chob3_ws/src/expo_bot' returned '0': PYTHONPATH=/home/viator/ws/chob3_ws/build/expo_bot/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/viator/ws/chob3_ws/install/expo_bot/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/expo_bot build --build-base /home/viator/ws/chob3_ws/build/expo_bot/build install --record /home/viator/ws/chob3_ws/build/expo_bot/install.log --single-version-externally-managed install_data
