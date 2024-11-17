@@ -11,20 +11,19 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge  # OpenCV 이미지를 ROS2 이미지 메시지로 변환
 from sensor_msgs.msg import CompressedImage
 import numpy as np
-from ament_index_python.packages import get_package_share_directory
 
 
 # CCTVCrowdDetectionNode 클래스 정의
 class CCTVCrowdDetectionNode(Node):
     def __init__(self):
         super().__init__('cctv_detection_node')  # 노드 이름 설정
-        self.image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  #CompressedImage 이미지 퍼블리셔 생성 
+        self.crowd_image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  #CompressedImage 이미지 퍼블리셔 생성 
         self.detected_object_publisher_ = self.create_publisher(String, '/detected_object', 10) #객체인식된 정보 퍼블리셔 생성
       
         self.json_data = []  # 데이터를 저장할 리스트 초기화
         self.bridge = CvBridge()  # CvBridge 인스턴스 생성
         self.blue_box_margin = 50  # 파란색 바운딩 박스의 여백 (픽셀 단위)
-        self.model = YOLO('./src/expo_bot/resource/my_best.pt')  # YOLO 모델 로드
+        self.model = YOLO('./src/expo_bot/resource/cctv.pt')  # YOLO 모델 로드
         self.cap = cv2.VideoCapture(0)  # 카메라 사용
         self.last_alert = None  # 마지막 알림 시간 추적 (초기화)
    
@@ -110,13 +109,13 @@ class CCTVCrowdDetectionNode(Node):
             image_message.data = np.array(encoded_image).tobytes()  # 압축된 이미지를 바이트로 변환
 
             #image_message = self.bridge.cv2_to_imgmsg(img, encoding="bgr8")
-            self.image_publisher_.publish(image_message)
+            self.crowd_image_publisher_.publish(image_message)
 
             # 화면에 결과 표시
-            cv2.imshow('crowd_location', img)
+            #cv2.imshow('crowd_location', img)
 
-            if cv2.waitKey(1) == ord('q'):
-                break
+            # if cv2.waitKey(1) == ord('q'):
+            #     break
 
         # 카메라 자원 해제 및 창 닫기
         self.cap.release()

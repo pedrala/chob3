@@ -1,3 +1,4 @@
+import os
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
@@ -20,10 +21,26 @@ class AMRControlNode(Node):
         # 카메라 영상을 발행할 토픽 생성
         self.image_publisher_ = self.create_publisher(CompressedImage, '/amr_camera_image', 10)
         self.bridge = CvBridge()  # OpenCV 브리지 생성
-        #self.model = YOLO('./output/my_best.pt')  # YOLO 모델 로드
-         
-        # 카메라 초기화 (예시로 로컬 카메라 사용)
-        self.cap = cv2.VideoCapture(0)
+        
+        # 카메라 초기화
+        for device_index in range(2):  # 최대 2개의 카메라 확인
+            self.cap = cv2.VideoCapture(device_index)
+            if self.cap.isOpened():
+                self.get_logger().info(f"카메라 초기화 성공: /dev/video{device_index}")
+                break
+        else:
+            self.get_logger().error("카메라 초기화 실패! 연결된 카메라를 확인하세요.")
+            return
+
+        # YOLO 모델 로드
+        model_path = '/home/rokey9/chob3/chob3_ws/src/expo_bot/resource/robot.pt'
+        if not os.path.exists(model_path):
+            self.get_logger().error(f"YOLO 모델 파일이 없습니다: {model_path}")
+        else:
+            self.model = YOLO(model_path)
+            #self.model = YOLO('./src/expo_bot/resource/robot.pt')  # YOLO 모델 로드
+     
+
         # Odometry 또는 AMCL의 위치 정보를 구독
         self.pose_subscription_ = self.create_subscription(
             Odometry,
@@ -38,8 +55,19 @@ class AMRControlNode(Node):
 
     def run_detection(self):
         while True:
-            success, img = self.cap.read()  # 카메라로부터 이미지 읽기
-            results = self.model(img, stream=True)  # YOLO 모델을 이용해 객체 감지
+            # 카메라에서 프레임 읽기
+            ret, img = self.cap.read()
+            if not ret or img is None:
+                self.get_logger().error("카메라 프레임을 읽을 수 없습니다. 연결 상태를 확인하세요.")
+                return  # 비정상적인 경우 처리 중단
+
+            # YOLO 모델 적용
+            try:
+                results = self.model(img, stream=True)
+                # (이하 YOLO 객체 인식 처리 코드)
+            except Exception as e:
+                self.get_logger().error(f"YOLO 처리 중 오류 발생: {e}")
+                return
 
             for r in results:
                 boxes = r.boxes  # 감지된 객체들의 바운딩 박스 정보
@@ -75,15 +103,14 @@ class AMRControlNode(Node):
 
             if cv2.waitKey(1) == ord('q'):
                 break
-
+            
         # 카메라 자원 해제 및 창 닫기
         self.cap.release()
         cv2.destroyAllWindows()
 
     # Odometry로부터 로봇 위치 정보 받기
     def pose_callback(self, msg):
-        # Odometry 메시지에서 위치 정보 가져오기
-        self.current_position.x = msg.pose.pose.position.x
+        # Odometry 메시지에서 위치 정보 가져오기image_messagex
         self.current_position.y = msg.pose.pose.position.y
         self.current_position.z = 0.0  # 2D 위치
         self.get_logger().info(f"로봇 위치 업데이트: x={self.current_position.x}, y={self.current_position.y}")

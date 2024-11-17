@@ -14,6 +14,7 @@ import numpy as np
 from geometry_msgs.msg import Point
 import os
 from ament_index_python.packages import get_package_share_directory
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 
 # Flask App 설정
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -29,11 +30,14 @@ class SysMonitorNode(Node):
         # 데이터베이스 접근 스레드 안전을 위한 락
         self.db_lock = threading.Lock()
 
+        qos_profile = QoSProfile(depth=10)
+        qos_profile.reliability = ReliabilityPolicy.RELIABLE  # Reliable 설정
+
         # ROS2 토픽 구독 설정
         self.subscription1 = self.create_subscription(
             CompressedImage, 'crowd_image', self.crowd_image_callback, 10)
         self.subscription2 = self.create_subscription(
-            CompressedImage, 'amr_camera_image', self.amr_image_callback, 10)
+            CompressedImage, 'amr_camera_image', self.amr_image_callback, qos_profile)
         self.json_subscription = self.create_subscription(
             String, '/detected_object', self.json_callback, 10)
         
@@ -51,9 +55,6 @@ class SysMonitorNode(Node):
 
         # 목표 좌표 5개 이상 리스트에 저장하고 하나씩 action 으로 실행하도록 구현
         self.get_target_positions_from_file()
-        # target_position = Point(x=1.0, y=2.0, z=0.0)  # 목표 좌표 (예: x=1.0, y=2.0)
-        # self.get_logger().info("목표 좌표 전송 중...")
-        #self.target_coordinate_publisher_.publish(target_position)
               
 
     def initialize_database(self):
@@ -73,14 +74,23 @@ class SysMonitorNode(Node):
     def crowd_image_callback(self, msg):
         try:
             np_arr = np.frombuffer(msg.data, np.uint8)
-            self.latest_frame1 = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            with self.db_lock:  # Lock을 사용하여 thread safety 확보
+                self.latest_frame1 = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         except Exception as e:
             self.get_logger().error(f"Failed to decode crowd image: {e}")
 
     def amr_image_callback(self, msg):
         try:
             np_arr = np.frombuffer(msg.data, np.uint8)
-            self.latest_frame2 = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+            with self.db_lock:  # Lock을 사용하여 thread safety 확보
+                img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                if img is None:
+                    self.get_logger().warn("Failed to decode image")
+                else:
+                    self.latest_frame2 = img
+                    self.get_logger().info("Received new image frame")
+
+                self.latest_frame2 = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         except Exception as e:
             self.get_logger().error(f"Failed to decode AMR image: {e}")
 
@@ -135,8 +145,9 @@ class SysMonitorNode(Node):
         self.conn.close()
         super().destroy_node()
 
+
 # Flask 이미지 스트리밍 제너레이터
-def generate_frames(latest_frame_getter):
+def generate_frames1(latest_frame_getter):
     while True:
         frame = latest_frame_getter()
         if frame is not None:
@@ -150,6 +161,23 @@ def generate_frames(latest_frame_getter):
                 app.logger.error(f"Error encoding frame: {e}")
         else:
             continue
+
+# Flask 이미지 스트리밍 제너레이터
+def generate_frames2(latest_frame_getter):
+    while True:
+        frame = latest_frame_getter()
+        if frame is not None:
+            try:
+                ret, jpeg = cv2.imencode('.jpg', frame)
+                if ret:
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' +
+                           jpeg.tobytes() + b'\r\n')
+            except Exception as e:
+                app.logger.error(f"Error encoding frame: {e}")
+        else:
+            continue
+
 
 @app.route('/')
 def index():
@@ -171,12 +199,12 @@ def index():
 
 @app.route('/video_feed1')
 def video_feed1():
-    return Response(generate_frames(lambda: sys_monitor_node.latest_frame1),
+    return Response(generate_frames1(lambda: sys_monitor_node.latest_frame1),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/video_feed2')
 def video_feed2():
-    return Response(generate_frames(lambda: sys_monitor_node.latest_frame2),
+    return Response(generate_frames2(lambda: sys_monitor_node.latest_frame2),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/get_detected_data')
@@ -207,7 +235,7 @@ def main():
     global sys_monitor_node
     sys_monitor_node = SysMonitorNode()
 
-    flask_thread = threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5555, debug=False, use_reloader=False))
+    flask_thread = threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5308, debug=False, use_reloader=False))
     flask_thread.start()
 
     try:
