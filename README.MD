@@ -24,13 +24,13 @@ ros2 run expo_bot cctv_detection_node cctv.pt
 ros2 run expo_bot sys_monitor_node  
 ```
 
-### 3. AMR봇 자체 좌표 및 영상 토픽으로 발행, 
+### 3. AMR봇 자체 좌표 및 영상 토픽으로 발행 (AMR 에 원격 접속하여 해당폴더로 이동하여 실행할 것)
 
 ```console
 ros2 run expo_bot amr_control_node 
 ```
 
-### 4. 위치 초기화, 목표좌표(JSON))와 AMR봇좌표를 구독받고  목표좌표로 네비게이션 
+### 4. 위치 초기화, 목표좌표(JSON))와 AMR봇좌표를 구독받고  목표좌표로 네비게이션 (AMR 에 원격 접속하여 해당폴더로 이동하여 실행할 것)
 
 ```console
 ros2 run expo_bot navigate_to_goal_node 
