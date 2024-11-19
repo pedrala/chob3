@@ -4,7 +4,8 @@ This project aims to implement an AMR service robot to promote a company at an e
 --------------------------------------------------------------------
 
 ```console
-colcon build
+cd ~/chob3_ws
+colcon build or
 colcon build --packages-select expo_bot
 
 source install/setup.bash
