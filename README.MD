@@ -1,4 +1,4 @@
-This project is for implemeting amr service robot promoting company in the convention.
+This project aims to implement an AMR service robot to promote a company at an exhibition.
 
 ## 패키지 빌드
 --------------------------------------------------------------------
