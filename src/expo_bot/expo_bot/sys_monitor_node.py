@@ -30,18 +30,21 @@ class SysMonitorNode(Node):
         # 데이터베이스 접근 스레드 안전을 위한 락
         self.db_lock = threading.Lock()
 
-        qos_profile = QoSProfile(depth=10)
-        qos_profile.reliability = ReliabilityPolicy.RELIABLE  # Reliable 설정
+        qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,  # BEST_EFFORT 또는 RELIABLE
+            depth=10
+        )
 
         # ROS2 토픽 구독 설정
         self.subscription1 = self.create_subscription(
             CompressedImage, 'crowd_image', self.crowd_image_callback, 10)
         self.subscription2 = self.create_subscription(
-            CompressedImage, 'amr_camera_image', self.amr_image_callback, qos_profile)
+            CompressedImage, '/amr_camera_image', self.amr_image_callback, qos_profile)
         self.json_subscription = self.create_subscription(
             String, '/detected_object', self.json_callback, 10)
         
-        self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', 10) #목표좌표 퍼블리셔
+        #목표좌표 퍼블리셔
+        self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', qos_profile) 
 
         # CvBridge 초기화
         self.bridge = CvBridge()
@@ -81,6 +84,7 @@ class SysMonitorNode(Node):
 
     def amr_image_callback(self, msg):
         try:
+            print("amr_camera_image:" + msg.data)
             np_arr = np.frombuffer(msg.data, np.uint8)
             with self.db_lock:  # Lock을 사용하여 thread safety 확보
                 img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -235,7 +239,7 @@ def main():
     global sys_monitor_node
     sys_monitor_node = SysMonitorNode()
 
-    flask_thread = threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5308, debug=False, use_reloader=False))
+    flask_thread = threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5311, debug=False, use_reloader=False))
     flask_thread.start()
 
     try:

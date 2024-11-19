@@ -10,16 +10,22 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import CompressedImage
 import numpy as np
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 
 class AMRControlNode(Node):
     def __init__(self):
         super().__init__('amr_control_node')
+
+        qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,  # BEST_EFFORT 또는 RELIABLE
+            depth=10
+        )
         
         # 현재 위치를 발행할 토픽 생성
-        self.position_publisher_ = self.create_publisher(Point, '/amr_current_position', 10)
+        self.position_publisher_ = self.create_publisher(Point, '/amr_current_position', qos_profile)
         
         # 카메라 영상을 발행할 토픽 생성
-        self.image_publisher_ = self.create_publisher(CompressedImage, '/amr_camera_image', 10)
+        self.image_publisher_ = self.create_publisher(CompressedImage, '/amr_camera_image', qos_profile)
         self.bridge = CvBridge()  # OpenCV 브리지 생성
         
         # 카메라 초기화

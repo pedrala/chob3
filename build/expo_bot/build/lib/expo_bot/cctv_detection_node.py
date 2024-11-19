@@ -11,14 +11,20 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge  # OpenCV 이미지를 ROS2 이미지 메시지로 변환
 from sensor_msgs.msg import CompressedImage
 import numpy as np
-
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 
 # CCTVCrowdDetectionNode 클래스 정의
 class CCTVCrowdDetectionNode(Node):
     def __init__(self):
         super().__init__('cctv_detection_node')  # 노드 이름 설정
-        self.crowd_image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', 10)  #CompressedImage 이미지 퍼블리셔 생성 
-        self.detected_object_publisher_ = self.create_publisher(String, '/detected_object', 10) #객체인식된 정보 퍼블리셔 생성
+
+        qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,  # BEST_EFFORT 또는 RELIABLE
+            depth=10
+        )
+
+        self.crowd_image_publisher_ = self.create_publisher(CompressedImage, '/crowd_image', qos_profile)  #CompressedImage 이미지 퍼블리셔 생성 
+        self.detected_object_publisher_ = self.create_publisher(String, '/detected_object', qos_profile) #객체인식된 정보 퍼블리셔 생성
       
         self.json_data = []  # 데이터를 저장할 리스트 초기화
         self.bridge = CvBridge()  # CvBridge 인스턴스 생성

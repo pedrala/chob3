@@ -30,29 +30,32 @@ class SysMonitorNode(Node):
         # 데이터베이스 접근 스레드 안전을 위한 락
         self.db_lock = threading.Lock()
 
-        qos_profile = QoSProfile(depth=10)
-        qos_profile.reliability = ReliabilityPolicy.RELIABLE  # Reliable 설정
+        qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,  # BEST_EFFORT 또는 RELIABLE
+            depth=10
+        )
 
+        print("====================================================================1")
         # ROS2 토픽 구독 설정
-        self.subscription1 = self.create_subscription(
-            CompressedImage, 'crowd_image', self.crowd_image_callback, 10)
+        # self.subscription1 = self.create_subscription(
+        #     CompressedImage, 'crowd_image', self.crowd_image_callback, 10)
         self.subscription2 = self.create_subscription(
-            CompressedImage, 'amr_camera_image', self.amr_image_callback, qos_profile)
+            CompressedImage, '/amr_camera_image', self.amr_image_callback, qos_profile)
         self.json_subscription = self.create_subscription(
             String, '/detected_object', self.json_callback, 10)
-        
-        self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', 10) #목표좌표 퍼블리셔
+        print("====================================================================2")
+        self.target_coordinate_publisher_ = self.create_publisher(Point, '/target_coordinate', qos_profile) #목표좌표 퍼블리셔
 
         # CvBridge 초기화
         self.bridge = CvBridge()
         self.latest_frame1 = None  # 최신 프레임 저장
         self.latest_frame2 = None
-
+        print("====================================================================3")
         # SQLite3 데이터베이스 초기화
         self.conn = sqlite3.connect('detected_objects.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.initialize_database()
-
+        print("====================================================================4")
         # 목표 좌표 5개 이상 리스트에 저장하고 하나씩 action 으로 실행하도록 구현
         self.get_target_positions_from_file()
               
@@ -81,6 +84,8 @@ class SysMonitorNode(Node):
 
     def amr_image_callback(self, msg):
         try:
+            print("====================================================================")
+            print("amr_camera_image:" + msg.data)
             np_arr = np.frombuffer(msg.data, np.uint8)
             with self.db_lock:  # Lock을 사용하여 thread safety 확보
                 img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -204,7 +209,7 @@ def video_feed1():
 
 @app.route('/video_feed2')
 def video_feed2():
-    return Response(generate_frames2(lambda: sys_monitor_node.latest_frame1),
+    return Response(generate_frames2(lambda: sys_monitor_node.latest_frame2),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/get_detected_data')
@@ -235,7 +240,7 @@ def main():
     global sys_monitor_node
     sys_monitor_node = SysMonitorNode()
 
-    flask_thread = threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5308, debug=False, use_reloader=False))
+    flask_thread = threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5311, debug=False, use_reloader=False))
     flask_thread.start()
 
     try:
