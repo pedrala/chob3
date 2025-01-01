@@ -1,5 +1,10 @@
 This project aims to implement an AMR service robot to promote a company at an exhibition.
 
+<p align="center">
+  <img src="/expobot_demo.png" alt="expobot_demo" width="1000">
+</p>
+
+
 ## 패키지 빌드
 --------------------------------------------------------------------
 
