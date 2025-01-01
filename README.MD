@@ -1,4 +1,8 @@
-This project aims to implement an AMR service robot to promote a company at an exhibition.
+## Description
+-----------------------------
+
+컨벤션센터의 CCTV에서 구독받은 이미지를 Flask를 통해 웹화면에 보여주고 시스템 모니터 노드에서는 YOLO 객체인식을 처리합니다. 화면의 바운딩박스안에 3명 이상이 모였다고 판단한 순간 목표좌표를 AMR 봇에게 전달하면 AMR봇은 해당위치로 이동합니다. 이동중 카메라의 이미지를 구독받아 웹화면에 디스플레이합니다.
+
 
 <p align="center">
   <img src="/expobot_demo.png" alt="expobot_demo" width="1000">
