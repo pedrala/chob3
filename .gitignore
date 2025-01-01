@@ -1,1 +1,3 @@
-detected_objects.db
+log/
+install/
+build/
